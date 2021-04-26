@@ -4,9 +4,11 @@ import com.example.rest.entity.Author;
 import com.example.rest.repository.AuthorRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 
@@ -24,16 +26,17 @@ public class AuthorApiController {
 
     @PutMapping(value="/{id}")
     public Author update(@PathVariable Long id, @RequestParam String name, LocalDate birthDate, String phone,
-                         String email) throws Exception {
+                         String email) {
 
-        Author author = authorRepository.findById(id).orElseThrow(()->new Exception("No author with ID : " + id));
+        Author author = authorRepository.findById(id).orElseThrow(()->new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "No author with id: " + id));
 
         author.setAuthorName(name);
         author.setBirthDate(birthDate);
         author.setPhone(phone);
         author.setEmail(email);
 
-        return author;
+        return authorRepository.save(author);
     }
 
     @DeleteMapping(path = "/{id}")
