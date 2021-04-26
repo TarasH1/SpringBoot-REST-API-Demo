@@ -1,7 +1,6 @@
 package com.example.rest.entity;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 
 @Entity
 public class Book {
@@ -19,10 +18,10 @@ public class Book {
     private Author author;
 
     @Column
-    private BigDecimal publishedAmount;
+    private Long publishedAmount;
 
     @Column
-    private BigDecimal soldAmount;
+    private Long soldAmount;
 
     public Long getId() {
         return id;
@@ -44,19 +43,19 @@ public class Book {
         this.author = author;
     }
 
-    public BigDecimal getPublishedAmount() {
+    public Long getPublishedAmount() {
         return publishedAmount;
     }
 
-    public void setPublishedAmount(BigDecimal publishedAmount) {
+    public void setPublishedAmount(Long publishedAmount) {
         this.publishedAmount = publishedAmount;
     }
 
-    public BigDecimal getSoldAmount() {
+    public Long getSoldAmount() {
         return soldAmount;
     }
 
-    public void setSoldAmount(BigDecimal soldAmount) {
+    public void setSoldAmount(Long soldAmount) {
         this.soldAmount = soldAmount;
     }
 

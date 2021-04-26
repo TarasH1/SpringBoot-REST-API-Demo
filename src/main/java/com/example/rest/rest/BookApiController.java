@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -30,8 +29,8 @@ public class BookApiController {
 
         private String bookName;
         private Long authorId;
-        private BigDecimal publishedAmount;
-        private BigDecimal soldAmount;
+        private Long publishedAmount;
+        private Long soldAmount;
 
         public String getBookName() {
             return bookName;
@@ -45,23 +44,19 @@ public class BookApiController {
             return authorId;
         }
 
-        public void setAuthorId(Long authorId) {
-            this.authorId = authorId;
-        }
-
-        public BigDecimal getPublishedAmount() {
+        public Long getPublishedAmount() {
             return publishedAmount;
         }
 
-        public void setPublishedAmount(BigDecimal publishedAmount) {
+        public void setPublishedAmount(Long publishedAmount) {
             this.publishedAmount = publishedAmount;
         }
 
-        public BigDecimal getSoldAmount() {
+        public Long getSoldAmount() {
             return soldAmount;
         }
 
-        public void setSoldAmount(BigDecimal soldAmount) {
+        public void setSoldAmount(Long soldAmount) {
             this.soldAmount = soldAmount;
         }
     }
@@ -112,7 +107,9 @@ public class BookApiController {
 
             List<Book> bookList = (List<Book>) bookRepository.findAll();
 
-            bookList = bookList.stream().filter(book -> book.getAuthor().getAuthorName().equals(name))
+            bookList = bookList
+                    .stream()
+                    .filter(book -> book.getAuthor().getAuthorName().equals(name))
                     .collect(Collectors.toList());
 
             if (bookList.size() > 0) {
@@ -129,7 +126,9 @@ public class BookApiController {
 
         List<Book> bookList = (List<Book>) bookRepository.findAll();
 
-        bookList = bookList.stream().filter(book -> book.getAuthor().getAuthorName().equals(name))
+        bookList = bookList
+                .stream()
+                .filter(book -> book.getAuthor().getAuthorName().equals(name))
                 .collect(Collectors.toList());
 
         Book maxByAuthor = null;
@@ -156,7 +155,9 @@ public class BookApiController {
 
         List<Book> bookList = (List<Book>) bookRepository.findAll();
 
-        bookList = bookList.stream().filter(book -> book.getAuthor().getAuthorName().equals(name))
+        bookList = bookList
+                .stream()
+                .filter(book -> book.getAuthor().getAuthorName().equals(name))
                 .collect(Collectors.toList());
 
         Book maxByAuthor = null;
@@ -174,6 +175,48 @@ public class BookApiController {
         } else {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Book not found");
+        }
+
+    }
+
+    @GetMapping(value="/author/selling_list")
+    public List<Book> getMostSellingBookListByAuthorName(@RequestParam String name) {
+
+        List<Book> bookList = (List<Book>) bookRepository.findAll();
+        Author author = authorRepository.findByAuthorNameContains(name);
+
+        bookList = bookList
+                .stream()
+                .filter(book -> book.getAuthor().equals(author))
+                .sorted((b1, b2) -> Long.compare(b2.getSoldAmount(), b1.getSoldAmount()))
+                .collect(Collectors.toList());
+
+        if (bookList.size() > 0) {
+            return bookList;
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Books not found by author name: " + name);
+        }
+
+    }
+
+    @GetMapping(value="/author/published_list")
+    public List<Book> getMostPublishedBookListByAuthorName(@RequestParam String name) {
+
+        List<Book> bookList = (List<Book>) bookRepository.findAll();
+        Author author = authorRepository.findByAuthorNameContains(name);
+
+        bookList = bookList
+                .stream()
+                .filter(book -> book.getAuthor().equals(author))
+                .sorted((b1, b2) -> Long.compare(b2.getPublishedAmount(), b1.getPublishedAmount()))
+                .collect(Collectors.toList());
+
+        if (bookList.size() > 0) {
+            return bookList;
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Books not found by author name: " + name);
         }
 
     }
