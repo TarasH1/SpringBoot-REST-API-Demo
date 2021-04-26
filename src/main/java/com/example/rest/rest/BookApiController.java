@@ -124,7 +124,7 @@ public class BookApiController {
 
     }
 
-    @GetMapping(value="/author/max")
+    @GetMapping(value="/author/sold")
     public Book getMaxSoldAmountByAuthorName(@RequestParam String name) {
 
         List<Book> bookList = (List<Book>) bookRepository.findAll();
@@ -139,6 +139,33 @@ public class BookApiController {
             maxByAuthor = bookList
                     .stream()
                     .max(Comparator.comparing(Book::getSoldAmount))
+                    .orElseThrow(NoSuchElementException::new);
+        }
+
+        if (maxByAuthor != null) {
+            return maxByAuthor;
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Book not found");
+        }
+
+    }
+
+    @GetMapping(value="/author/published")
+    public Book getMaxPublishedAmountByAuthorName(@RequestParam String name) {
+
+        List<Book> bookList = (List<Book>) bookRepository.findAll();
+
+        bookList = bookList.stream().filter(book -> book.getAuthor().getAuthorName().equals(name))
+                .collect(Collectors.toList());
+
+        Book maxByAuthor = null;
+
+        if (bookList.size() > 0) {
+
+            maxByAuthor = bookList
+                    .stream()
+                    .max(Comparator.comparing(Book::getPublishedAmount))
                     .orElseThrow(NoSuchElementException::new);
         }
 
