@@ -7,11 +7,14 @@ import com.example.rest.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/api/book")
@@ -103,4 +106,49 @@ public class BookApiController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping(value="/author")
+    public List<Book> getBookListByAuthorName(@RequestParam String name) {
+
+            List<Book> bookList = (List<Book>) bookRepository.findAll();
+
+            bookList = bookList.stream().filter(book -> book.getAuthor().getAuthorName().equals(name))
+                    .collect(Collectors.toList());
+
+            if (bookList.size() > 0) {
+                return bookList;
+            } else {
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Books not found by author name: " + name);
+            }
+
+    }
+
+    @GetMapping(value="/author/max")
+    public Book getMaxSoldAmountByAuthorName(@RequestParam String name) {
+
+        List<Book> bookList = (List<Book>) bookRepository.findAll();
+
+        bookList = bookList.stream().filter(book -> book.getAuthor().getAuthorName().equals(name))
+                .collect(Collectors.toList());
+
+        Book maxByAuthor = null;
+
+        if (bookList.size() > 0) {
+
+            maxByAuthor = bookList
+                    .stream()
+                    .max(Comparator.comparing(Book::getSoldAmount))
+                    .orElseThrow(NoSuchElementException::new);
+        }
+
+        if (maxByAuthor != null) {
+            return maxByAuthor;
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Book not found");
+        }
+
+    }
+
 }
