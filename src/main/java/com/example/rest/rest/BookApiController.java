@@ -179,7 +179,7 @@ public class BookApiController {
 
     }
 
-    @GetMapping(value="/author/selling_list")
+    @GetMapping(value="/author/selling-list")
     public List<Book> getMostSellingBookListByAuthorName(@RequestParam String name) {
 
         List<Book> bookList = (List<Book>) bookRepository.findAll();
@@ -200,7 +200,7 @@ public class BookApiController {
 
     }
 
-    @GetMapping(value="/author/published_list")
+    @GetMapping(value="/author/published-list")
     public List<Book> getMostPublishedBookListByAuthorName(@RequestParam String name) {
 
         List<Book> bookList = (List<Book>) bookRepository.findAll();
@@ -210,6 +210,27 @@ public class BookApiController {
                 .stream()
                 .filter(book -> book.getAuthor().equals(author))
                 .sorted((b1, b2) -> Long.compare(b2.getPublishedAmount(), b1.getPublishedAmount()))
+                .collect(Collectors.toList());
+
+        if (bookList.size() > 0) {
+            return bookList;
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Books not found by author name: " + name);
+        }
+
+    }
+
+    @GetMapping(value="/author/successful-list")
+    public List<Book> getMostSuccessfulBookListByAuthorName(@RequestParam String name) {
+
+        List<Book> bookList = (List<Book>) bookRepository.findAll();
+        Author author = authorRepository.findByAuthorNameContains(name);
+
+        bookList = bookList
+                .stream()
+                .filter(book -> book.getAuthor().equals(author))
+                .sorted(Comparator.comparingDouble(Book::getSuccessBookRate).reversed())
                 .collect(Collectors.toList());
 
         if (bookList.size() > 0) {

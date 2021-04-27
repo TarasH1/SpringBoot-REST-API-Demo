@@ -59,4 +59,8 @@ public class Book {
         this.soldAmount = soldAmount;
     }
 
+    public Double getSuccessBookRate() {
+        return (double) this.soldAmount / this.publishedAmount;
+    }
+
 }
