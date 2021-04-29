@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/api/author")
@@ -54,12 +55,59 @@ public class AuthorApiController {
     }
 
     @GetMapping(value="/most-successful")
-    public Author getMostSuccessfulAuthor() {
+    public HashMap<String, String> getMostSuccessfulAuthor() {
 
-        List<Author> authorList = (List<Author>) authorRepository.findAll();
         List<Book> bookList = (List<Book>) bookRepository.findAll();
+        List<Author> authorList = (List<Author>) authorRepository.findAll();
 
-        return null;
+        for (Book book : bookList) {
+            Author author = book.getAuthor();
+
+            Long authorId = null;
+            for (Author _author : authorList) {
+                authorId = _author.getId();
+
+                if (author.getId().equals(authorId)) {
+                    List<Book> booksByAuthor = bookRepository.findAllByAuthorId(authorId);
+                    double successRate = book.getSuccessBookRate() / (double) booksByAuthor.size();
+                    System.out.println("successAuthorRate for author: " + author.getAuthorName() + " " + successRate);
+                }
+            }
+
+        }
+
+        Double successAuthorRate = null;
+
+        for (Book book : bookList) {
+            Double successBookRate = book.getSuccessBookRate();
+            Double allBooksNumber = (double) bookList.size();
+            successAuthorRate = successBookRate / allBooksNumber;
+            //System.out.println(successAuthorRate);
+        }
+
+        Double finalSuccessAuthorRate = successAuthorRate;
+        bookList
+                .stream()
+                .mapToDouble(b -> finalSuccessAuthorRate)
+                .max()
+                .orElseThrow(NoSuchElementException::new);
+
+        Author author = null;
+        for (Book book : bookList) {
+            author = book.getAuthor();
+        }
+
+        LinkedHashMap<String, String> _authorList = new LinkedHashMap<>();
+
+        _authorList.put("authorName", author.getAuthorName());
+        _authorList.put("successAuthorRate", finalSuccessAuthorRate.toString());
+
+        if (bookList.size() > 0) {
+            return _authorList;
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Author not found");
+        }
     }
 
 }
