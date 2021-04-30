@@ -60,21 +60,28 @@ public class AuthorApiController {
         List<Book> bookList = (List<Book>) bookRepository.findAll();
         List<Author> authorList = (List<Author>) authorRepository.findAll();
 
+        double total = 0;
         for (Book book : bookList) {
             Author author = book.getAuthor();
 
-            Long authorId = null;
             for (Author _author : authorList) {
-                authorId = _author.getId();
 
-                if (author.getId().equals(authorId)) {
-                    List<Book> booksByAuthor = bookRepository.findAllByAuthorId(authorId);
+                if (author.equals(_author)) {
+                    List<Book> booksByAuthor = bookRepository.findAllByAuthorId(author.getId());
                     double successRate = book.getSuccessBookRate() / (double) booksByAuthor.size();
-                    System.out.println("successAuthorRate for author: " + author.getAuthorName() + " " + successRate);
+                    booksByAuthor.stream().mapToDouble(b -> successRate).max().orElseThrow(NoSuchElementException::new);
+                    for(Book b : booksByAuthor){
+                        Author author1 = b.getAuthor();
+                        System.out.println(author1.getAuthorName());
+                    }
+                    total = total + successRate;
+                    //System.out.println("successAuthorRate for author: " + author.getAuthorName() + " " + successRate);
                 }
+
             }
 
         }
+        //System.out.println("Total: " + total);
 
         Double successAuthorRate = null;
 
