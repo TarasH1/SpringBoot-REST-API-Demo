@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface BookRepository extends CrudRepository<Book, Long> {
-    List<Book> findAllByAuthorId(Long id);
+    List<Book> findByAuthorId(Long id);
 }

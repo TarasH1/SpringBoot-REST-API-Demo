@@ -14,7 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/api/author")
@@ -60,57 +59,41 @@ public class AuthorApiController {
         List<Book> bookList = (List<Book>) bookRepository.findAll();
         List<Author> authorList = (List<Author>) authorRepository.findAll();
 
-        double total = 0;
+        List<Object> authorFinalList = new ArrayList<>();
+        String authorName = null;
+        double successRate = 0;
+
         for (Book book : bookList) {
             Author author = book.getAuthor();
+
+            double successBookRateSum = 0;
 
             for (Author _author : authorList) {
 
                 if (author.equals(_author)) {
-                    List<Book> booksByAuthor = bookRepository.findAllByAuthorId(author.getId());
-                    double successRate = book.getSuccessBookRate() / (double) booksByAuthor.size();
-                    booksByAuthor.stream().mapToDouble(b -> successRate).max().orElseThrow(NoSuchElementException::new);
-                    for(Book b : booksByAuthor){
-                        Author author1 = b.getAuthor();
-                        System.out.println(author1.getAuthorName());
+                    List<Book> booksByAuthor = bookRepository.findByAuthorId(_author.getId());
+
+                    for (Book b : booksByAuthor) {
+                        authorName = b.getAuthor().getAuthorName();
+                        successBookRateSum = successBookRateSum + b.getSuccessBookRate();
+                        successRate = successBookRateSum / (double) booksByAuthor.size();
                     }
-                    total = total + successRate;
-                    //System.out.println("successAuthorRate for author: " + author.getAuthorName() + " " + successRate);
+                    authorFinalList.add(authorName);
+                    authorFinalList.add(successRate);
                 }
-
             }
-
         }
-        //System.out.println("Total: " + total);
-
-        Double successAuthorRate = null;
-
-        for (Book book : bookList) {
-            Double successBookRate = book.getSuccessBookRate();
-            Double allBooksNumber = (double) bookList.size();
-            successAuthorRate = successBookRate / allBooksNumber;
-            //System.out.println(successAuthorRate);
-        }
-
-        Double finalSuccessAuthorRate = successAuthorRate;
-        bookList
+/*        double finalSuccessRate = successRate;
+        authorFinalList
                 .stream()
-                .mapToDouble(b -> finalSuccessAuthorRate)
-                .max()
-                .orElseThrow(NoSuchElementException::new);
-
-        Author author = null;
-        for (Book book : bookList) {
-            author = book.getAuthor();
+                .max(Comparator.comparing())
+                .orElseThrow(NoSuchElementException::new);*/
+        for (Object author : authorFinalList) {
+            System.out.println(author);
         }
-
-        LinkedHashMap<String, String> _authorList = new LinkedHashMap<>();
-
-        _authorList.put("authorName", author.getAuthorName());
-        _authorList.put("successAuthorRate", finalSuccessAuthorRate.toString());
 
         if (bookList.size() > 0) {
-            return _authorList;
+            return null;
         } else {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Author not found");
