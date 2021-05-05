@@ -54,12 +54,12 @@ public class AuthorApiController {
     }
 
     @GetMapping(value="/most-successful")
-    public HashMap<String, String> getMostSuccessfulAuthor() {
+    public Map.Entry<String, Double> getMostSuccessfulAuthor() {
 
         List<Book> bookList = (List<Book>) bookRepository.findAll();
         List<Author> authorList = (List<Author>) authorRepository.findAll();
 
-        List<Object> authorFinalList = new ArrayList<>();
+        HashMap<String, Double> authorFinalList = new HashMap<>();
         String authorName = null;
         double successRate = 0;
 
@@ -78,22 +78,20 @@ public class AuthorApiController {
                         successBookRateSum = successBookRateSum + b.getSuccessBookRate();
                         successRate = successBookRateSum / (double) booksByAuthor.size();
                     }
-                    authorFinalList.add(authorName);
-                    authorFinalList.add(successRate);
+                    authorFinalList.put(authorName, successRate);
                 }
             }
         }
-/*        double finalSuccessRate = successRate;
-        authorFinalList
-                .stream()
-                .max(Comparator.comparing())
-                .orElseThrow(NoSuchElementException::new);*/
-        for (Object author : authorFinalList) {
-            System.out.println(author);
+
+        Map.Entry<String, Double> maxEntry = null;
+        for (Map.Entry<String, Double> entry : authorFinalList.entrySet()) {
+            if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0) {
+                maxEntry = entry;
+            }
         }
 
         if (bookList.size() > 0) {
-            return null;
+            return maxEntry;
         } else {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Author not found");
