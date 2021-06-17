@@ -60,7 +60,6 @@ public class AuthorApiController {
         List<Author> authorList = (List<Author>) authorRepository.findAll();
 
         HashMap<String, Double> authorFinalList = new HashMap<>();
-        String authorName = null;
         double successRate = 0;
 
         for (Book book : bookList) {
@@ -74,11 +73,10 @@ public class AuthorApiController {
                     List<Book> booksByAuthor = bookRepository.findByAuthorId(_author.getId());
 
                     for (Book b : booksByAuthor) {
-                        authorName = b.getAuthor().getAuthorName();
                         successBookRateSum = successBookRateSum + b.getSuccessBookRate();
-                        successRate = successBookRateSum / (double) booksByAuthor.size();
                     }
-                    authorFinalList.put(authorName, successRate);
+                    successRate = successBookRateSum / (double) booksByAuthor.size();
+                    authorFinalList.put(_author.getAuthorName(), successRate);
                 }
             }
         }
@@ -89,6 +87,12 @@ public class AuthorApiController {
                 maxEntry = entry;
             }
         }
+
+/*        authorFinalList.values()
+                .stream()
+                .max(Comparator.comparing())
+                //.mapToDouble(v -> v)
+                .orElseThrow(NoSuchElementException::new);*/
 
         if (bookList.size() > 0) {
             return maxEntry;

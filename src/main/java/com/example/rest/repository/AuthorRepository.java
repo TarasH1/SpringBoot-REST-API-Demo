@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface AuthorRepository extends CrudRepository<Author, Long> {
-    Author findByAuthorNameContains(String name);
+    List<Author> findByAuthorNameContains(String name);
 }
